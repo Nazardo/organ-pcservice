@@ -20,18 +20,15 @@ namespace VirtualOrgan.PcService.Hauptwerk
             this.logger = logger;
         }
 
-        public Task<bool> IsAudioCardActive()
+        public async Task<bool> IsAudioCardActive()
         {
-            return IsUsbInterfaceDetected();
+            return await IsUsbInterfaceDetected();
         }
 
         private async Task<bool> IsUsbInterfaceDetected()
         {
             // Perform a test query to version api
-            HttpClient client = new HttpClient()
-            {
-                Timeout = TimeSpan.FromSeconds(2.0) // no need for long timeout here
-            };
+            HttpClient client = new HttpClient();
             try
             {
                 HttpResponseMessage response = await client.GetAsync(apiVersionUri);
@@ -40,7 +37,7 @@ namespace VirtualOrgan.PcService.Hauptwerk
             }
             catch (HttpRequestException e)
             {
-                logger.LogWarning(e, e.Message);
+                logger.LogDebug(e.Message);
                 return false;
             }
         }
