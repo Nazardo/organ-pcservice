@@ -10,8 +10,8 @@ namespace VirtualOrgan.PcService
 {
     internal sealed class PcService : IPcService, IDisposable
     {
-        private readonly ILogger<PcService> logger;
         private readonly IHauptwerkMidiInterface hauptwerk;
+        private readonly IAudioCardHelper audioCardHelper;
         private readonly IHauptwerkExeHelper exeHelper;
         private readonly IMidiArchiveHandler folder;
 
@@ -20,13 +20,13 @@ namespace VirtualOrgan.PcService
         private PcStatus status;
 
         public PcService(
-            ILogger<PcService> logger,
             IHauptwerkMidiInterface hauptwerk,
+            IAudioCardHelper audioCardHelper,
             IHauptwerkExeHelper exeHelper,
             IMidiArchiveHandler folder)
         {
-            this.logger = logger;
             this.hauptwerk = hauptwerk;
+            this.audioCardHelper = audioCardHelper;
             this.exeHelper = exeHelper;
             this.folder = folder;
             status = new PcStatus();
@@ -66,9 +66,12 @@ namespace VirtualOrgan.PcService
             hauptwerk.ShutDownComputer();
         }
 
-        public void StartHauptwerk()
+        public async Task StartHauptwerk()
         {
-            exeHelper.StartHauptwerk();
+            if (await audioCardHelper.IsAudioCardActive())
+            {
+                exeHelper.StartHauptwerk();
+            }
         }
 
         public void StopPlayback()
