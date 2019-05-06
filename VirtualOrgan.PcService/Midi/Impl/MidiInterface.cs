@@ -101,8 +101,10 @@ namespace VirtualOrgan.PcService.Midi.Impl
             if (running)
             {
                 running = false;
-                receiver.Join();
+                // Shutting down the port is the only way to unlock
+                // the reading call in receiver thread.
                 port.Shutdown();
+                receiver.Join();
             }
             if (port != null)
             {
