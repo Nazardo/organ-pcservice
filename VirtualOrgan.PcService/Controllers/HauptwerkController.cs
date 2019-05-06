@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using VirtualOrgan.PcService.Hauptwerk;
 
 namespace VirtualOrgan.PcService.Controllers
 {
@@ -20,9 +16,9 @@ namespace VirtualOrgan.PcService.Controllers
 
         // POST api/hauptwerk/start
         [HttpPost("start")]
-        public void Start()
+        public async Task Start()
         {
-            service.StartHauptwerk();
+            await service.StartHauptwerk();
         }
 
         // POST api/hauptwerk/play
