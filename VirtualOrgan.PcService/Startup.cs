@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +33,7 @@ namespace VirtualOrgan.PcService
                 .AddSingleton<Archive.IMidiArchiveHandler, Archive.MidiArchiveHandler>()
                 .AddSingleton<Midi.IMidiMessageSerializer, Midi.Impl.MessageSerializer>()
                 .AddSingleton<Midi.IMidiInterface, Midi.Impl.MidiInterface>()
-                .AddSingleton<Hauptwerk.IHauptwerkMidiInterface, Hauptwerk.HauptwerkMidiInterface>()
+                .AddAlwaysOnSingleton<Hauptwerk.IHauptwerkMidiInterface, Hauptwerk.HauptwerkMidiInterface>()
                 .AddSingleton<IPcService, PcService>()
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -46,7 +47,16 @@ namespace VirtualOrgan.PcService
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc();
+            app
+                .UseMvc()
+                .ActivateAlwaysOnServices()
+                .Run(NotFound);
+        }
+
+        private static Task NotFound(HttpContext context)
+        {
+            context.Response.StatusCode = 404;
+            return Task.CompletedTask;
         }
     }
 }
