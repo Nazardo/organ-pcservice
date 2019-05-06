@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace VirtualOrgan.PcService
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
@@ -19,6 +19,11 @@ namespace VirtualOrgan.PcService
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(c => c
+                    .AddEnvironmentVariables()
+                    .AddJsonFile("appsettings.json", optional: true)
+                    .AddCommandLine(args)
+                )
                 .UseStartup<Startup>();
     }
 }

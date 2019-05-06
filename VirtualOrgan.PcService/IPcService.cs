@@ -10,5 +10,6 @@
         void PlayMidiFile(int id);
         void StopPlayback();
         void ResetMidiAndAudio();
+        void ShutdownPc();
     }
 }

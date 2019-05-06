@@ -8,5 +8,7 @@ namespace VirtualOrgan.PcService.Hauptwerk
         void StopMidiPlayback();
         void ResetAudioAndMidi();
         IObservable<HauptwerkStatus> HauptwerkStatuses { get; }
+
+        void ShutDownComputer();
     }
 }

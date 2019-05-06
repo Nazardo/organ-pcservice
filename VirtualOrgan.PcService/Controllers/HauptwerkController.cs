@@ -34,16 +34,23 @@ namespace VirtualOrgan.PcService.Controllers
 
         // POST api/hauptwerk/stop
         [HttpPost("stop")]
-        public void Stop(int id)
+        public void Stop()
         {
             service.StopPlayback();
         }
 
         // POST api/hauptwerk/reset
         [HttpPost("reset")]
-        public void Reset(int id)
+        public void Reset()
         {
             service.ResetMidiAndAudio();
+        }
+
+        // POST api/hauptwerk/shutdown
+        [HttpPost("shutdown")]
+        public void Shutdown()
+        {
+            service.ShutdownPc();
         }
     }
 }

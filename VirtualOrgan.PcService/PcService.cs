@@ -61,6 +61,11 @@ namespace VirtualOrgan.PcService
             hauptwerk.ResetAudioAndMidi();
         }
 
+        public void ShutdownPc()
+        {
+            hauptwerk.ShutDownComputer();
+        }
+
         public void StartHauptwerk()
         {
             exeHelper.StartHauptwerk();

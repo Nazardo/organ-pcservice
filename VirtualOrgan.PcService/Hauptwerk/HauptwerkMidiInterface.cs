@@ -51,6 +51,11 @@ namespace VirtualOrgan.PcService.Hauptwerk
             SendMessageAsConfigured(config.Stop);
         }
 
+        public void ShutDownComputer()
+        {
+            SendMessageAsConfigured(config.Shutdown);
+        }
+
         private void SendMessageAsConfigured(HauptwerkConfiguration.MidiNote command)
         {
             var message = BuildMessageFromConfiguration(command);
