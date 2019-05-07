@@ -8,15 +8,14 @@ namespace VirtualOrgan.PcService.Hauptwerk
 {
     sealed class MotuAvbAudioCardHelper : IAudioCardHelper
     {
-        private readonly string apiVersionUri;
-        private static readonly string ApiVersion = "/apiversion";
+        private readonly string apiTestUrl;
         private readonly ILogger<MotuAvbAudioCardHelper> logger;
 
         public MotuAvbAudioCardHelper(
             ILogger<MotuAvbAudioCardHelper> logger,
             IOptions<MotuAvbConfiguration> options)
         {
-            apiVersionUri = options.Value.LocalhostUsbEndpoint + ApiVersion;
+            apiTestUrl = options.Value.ApiTestUrl;
             this.logger = logger;
         }
 
@@ -31,8 +30,9 @@ namespace VirtualOrgan.PcService.Hauptwerk
             HttpClient client = new HttpClient();
             try
             {
-                HttpResponseMessage response = await client.GetAsync(apiVersionUri);
-                logger.LogDebug("Call to \"{0}\" returned {1} ({1:d})", apiVersionUri, response.StatusCode);
+                HttpResponseMessage response = await client.GetAsync(apiTestUrl);
+                logger.LogDebug("Call to \"{0}\" returned {1} ({2})",
+                    apiTestUrl, response.StatusCode, (int)response.StatusCode);
                 return response.IsSuccessStatusCode;
             }
             catch (HttpRequestException e)
