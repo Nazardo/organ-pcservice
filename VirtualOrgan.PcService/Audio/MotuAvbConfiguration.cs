@@ -1,4 +1,4 @@
-﻿namespace VirtualOrgan.PcService.Hauptwerk
+﻿namespace VirtualOrgan.PcService.Audio
 {
     sealed class MotuAvbConfiguration
     {

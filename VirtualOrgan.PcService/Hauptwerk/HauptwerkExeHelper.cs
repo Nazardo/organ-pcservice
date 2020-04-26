@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace VirtualOrgan.PcService.Hauptwerk
 {
-    internal sealed class HauptwerkExeHelper : IHauptwerkExeHelper
+    internal sealed class HauptwerkExeHelper : IProcessHelper
     {
         private readonly string hauptwerkPath;
         private readonly string processFriendlyName;
@@ -24,20 +24,41 @@ namespace VirtualOrgan.PcService.Hauptwerk
             processFriendlyName = Path.GetFileNameWithoutExtension(hauptwerkPath);
         }
 
-        public bool IsHauptwerkRunning()
+        public bool IsRunning()
         {
-            return InternalIsHauptwerkRunning();
+            return InternalIsProcessRunning();
         }
 
-        public void StartHauptwerk()
+        public void Start()
         {
-            if (!InternalIsHauptwerkRunning())
+            if (!InternalIsProcessRunning())
             {
                 Process.Start(hauptwerkPath);
             }
         }
 
-        private bool InternalIsHauptwerkRunning()
+        public void KillAll()
+        {
+            var processes = Process.GetProcessesByName(processFriendlyName);
+            foreach (var p in processes)
+            {
+                try
+                {
+                    p.Kill();
+                }
+                catch (InvalidOperationException)
+                {
+                    // Process already stopped or not running.
+                    logger.LogDebug("Invalid operation when stopping process {0}:{1}", p.ProcessName, p.Id);
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning(e, "Failure stopping process {0}:{1}", p.ProcessName, p.Id);
+                }
+            }
+        }
+
+        private bool InternalIsProcessRunning()
         {
             var processes = Process.GetProcessesByName(processFriendlyName);
             if (logger.IsEnabled(LogLevel.Debug))

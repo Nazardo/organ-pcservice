@@ -2,81 +2,87 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using VirtualOrgan.PcService.Archive;
 using VirtualOrgan.PcService.Hauptwerk;
 
 namespace VirtualOrgan.PcService
 {
     internal sealed class PcService : IPcService, IDisposable
     {
-        private readonly IHauptwerkMidiInterface hauptwerk;
-        private readonly IAudioCardHelper audioCardHelper;
-        private readonly IHauptwerkExeHelper exeHelper;
-        private readonly IMidiArchiveHandler folder;
-
         private readonly IDisposable subscriptionToHauptwerkStatus;
-
+        private readonly IHauptwerkMidiInterface hauptwerk;
+        private readonly IServiceProvider serviceProvider;
+        private readonly ILogger<PcService> logger;
         private PcStatus status;
+        private ITaskWrapper currentTask;
 
         public PcService(
             IHauptwerkMidiInterface hauptwerk,
-            IAudioCardHelper audioCardHelper,
-            IHauptwerkExeHelper exeHelper,
-            IMidiArchiveHandler folder)
+            IServiceProvider serviceProvider,
+            ILogger<PcService> logger)
         {
-            this.hauptwerk = hauptwerk;
-            this.audioCardHelper = audioCardHelper;
-            this.exeHelper = exeHelper;
-            this.folder = folder;
             status = new PcStatus();
             subscriptionToHauptwerkStatus = hauptwerk.HauptwerkStatuses.Subscribe(
-                hwStatus =>
+                hwStatus => status = new PcStatus()
                 {
-                    status.IsHauptwerkRunning = true;
-                    status.IsHauptwerkAudioActive = hwStatus.IsHauptwerkAudioActive;
-                    status.IsHauptwerkMidiActive = hwStatus.IsHauptwerkMidiActive;
+                    IsHauptwerkRunning = true,
+                    IsHauptwerkAudioActive = hwStatus.IsHauptwerkAudioActive,
+                    IsHauptwerkMidiActive = hwStatus.IsHauptwerkMidiActive
                 });
+            this.hauptwerk = hauptwerk;
+            this.serviceProvider = serviceProvider;
+            this.logger = logger;
+            RunTask(serviceProvider.GetRequiredService<RestartHauptwerkTask>());
         }
 
         public void Dispose()
         {
+            currentTask?.Dispose();
             subscriptionToHauptwerkStatus.Dispose();
         }
 
-        public PcStatus GetStatus()
+        public Task<PcStatus> GetStatusAsync()
         {
-            return status;
-        }
-
-        public void PlayMidiFile(int id)
-        {
-            hauptwerk.StopMidiPlayback();
-            folder.SetActive(id);
-            hauptwerk.StartMidiPlayback();
+            return Task.FromResult(status);
         }
 
         public void ResetMidiAndAudio()
         {
-            hauptwerk.ResetAudioAndMidi();
+            logger.LogDebug("ResetMidiAndAudio");
+            hauptwerk.ResetMidiAndAudio();
+        }
+
+        public void RestartHauptwerk()
+        {
+            RunTask(serviceProvider.GetRequiredService<RestartHauptwerkTask>());
         }
 
         public void ShutdownPc()
         {
-            hauptwerk.ShutDownComputer();
+            RunTask(serviceProvider.GetRequiredService<QuitAndShutdownTask>());
         }
 
-        public async Task StartHauptwerk()
+        private void RunTask(ITaskWrapper task)
         {
-            if (await audioCardHelper.IsAudioCardActive())
+            if (currentTask != null)
             {
-                exeHelper.StartHauptwerk();
+                logger.LogDebug("Dispose running task");
+                currentTask.Dispose();
+                currentTask = null;
             }
+            currentTask = task;
+            task.Task.Start();
+        }
+
+        public void PlayMidiFile(int id)
+        {
+            // to be implemented
         }
 
         public void StopPlayback()
         {
-            hauptwerk.StopMidiPlayback();
+            // to be implemented
         }
     }
 }

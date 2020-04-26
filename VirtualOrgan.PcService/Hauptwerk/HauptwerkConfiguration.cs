@@ -27,7 +27,7 @@ namespace VirtualOrgan.PcService.Hauptwerk
         public MidiNote Play { get; set; } = Note(1, 6);
         public MidiNote Stop { get; set; } = Note(2, 6);
         public MidiNote Reset { get; set; } = Note(3, 6);
-        public MidiNote Shutdown { get; set; } = Note(4, 6);
+        public MidiNote Quit { get; set; } = Note(4, 6);
         public MidiNote OutAudioActive { get; set; } = Note(1, 6);
         public MidiNote OutMidiActive { get; set; } = Note(2, 6);
 

@@ -77,14 +77,18 @@ namespace VirtualOrgan.PcService.Midi.Impl
                 }
                 catch (MidiSerializerException e)
                 {
-                    logger.LogWarning(e.Message, e);
+                    logger.LogWarning(e, e.Message);
                 }
                 catch (TeVirtualMidiException e)
                 {
                     if (running && e.ReasonCode != (int)TeVirtualMidiException.Code.InvalidHandle)
                     {
-                        logger.LogError(e.Message, e);
+                        logger.LogError(e, e.Message);
                     }
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, e.Message);
                 }
             }
         }

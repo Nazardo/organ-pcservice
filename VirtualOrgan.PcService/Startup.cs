@@ -27,16 +27,32 @@ namespace VirtualOrgan.PcService
         {
             services
                 .AddLogging()
+                .Configure<FactoriesConfiguration>(Configuration.GetSection("factories"))
                 .Configure<Archive.MidiArchiveConfiguration>(Configuration.GetSection("archive"))
                 .Configure<Hauptwerk.HauptwerkConfiguration>(Configuration.GetSection("hauptwerk"))
-                .Configure<Hauptwerk.MotuAvbConfiguration>(Configuration.GetSection("motu"))
-                .AddSingleton<Hauptwerk.IHauptwerkExeHelper, Hauptwerk.HauptwerkExeHelper>()
-                .AddSingleton<Hauptwerk.IAudioCardHelper, Hauptwerk.MotuAvbAudioCardHelper>()
+                .Configure<Audio.MotuAvbConfiguration>(Configuration.GetSection("motu"))
+                .Configure<RestartHauptwerkConfiguration>(Configuration.GetSection("restart"))
+                .Configure<QuitAndShutdownConfiguration>(Configuration.GetSection("shutdown"))
+                // Shutdown
+                .AddSingleton<Win32.Win32Shutdown>()
+                .AddSingleton<IFactory<IShutdownProvider>, ShutdownProviderFactory>()
+                .AddSingleton<IShutdownProvider>(p => p.GetRequiredService<IFactory<IShutdownProvider>>().Create())
+                // Audio Card
+                .AddSingleton<Audio.MotuAvbAudioCard>()
+                .AddSingleton<IFactory<Audio.IAudioCard>, Audio.AudioCardFactory>()
+                .AddSingleton<Audio.IAudioCard>(p => p.GetRequiredService<IFactory<Audio.IAudioCard>>().Create())
+                // Hauptwerk
+                .AddSingleton<Hauptwerk.IProcessHelper, Hauptwerk.HauptwerkExeHelper>()
+                .AddAlwaysOnSingleton<Hauptwerk.IHauptwerkMidiInterface, Hauptwerk.HauptwerkMidiInterface>()
+                // Midi
                 .AddSingleton<Archive.IMidiArchiveHandler, Archive.MidiArchiveHandler>()
                 .AddSingleton<Midi.IMidiMessageSerializer, Midi.Impl.MessageSerializer>()
                 .AddSingleton<Midi.IMidiInterface, Midi.Impl.MidiInterface>()
-                .AddAlwaysOnSingleton<Hauptwerk.IHauptwerkMidiInterface, Hauptwerk.HauptwerkMidiInterface>()
-                .AddSingleton<IPcService, PcService>()
+
+                .AddTransient<QuitAndShutdownTask>()
+                .AddTransient<RestartHauptwerkTask>()
+
+                .AddAlwaysOnSingleton<IPcService, PcService>()
                 .AddControllers();
         }
 

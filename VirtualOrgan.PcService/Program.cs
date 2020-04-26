@@ -13,7 +13,13 @@ namespace VirtualOrgan.PcService
     {
         public static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.Write(e.ExceptionObject);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

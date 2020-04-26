@@ -4,11 +4,11 @@ namespace VirtualOrgan.PcService.Hauptwerk
 {
     public interface IHauptwerkMidiInterface
     {
+        void ClearStatus();
         void StartMidiPlayback();
         void StopMidiPlayback();
-        void ResetAudioAndMidi();
+        void Quit();
+        void ResetMidiAndAudio();
         IObservable<HauptwerkStatus> HauptwerkStatuses { get; }
-
-        void ShutDownComputer();
     }
 }

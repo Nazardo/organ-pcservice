@@ -36,7 +36,13 @@ namespace VirtualOrgan.PcService.Hauptwerk
             return status;
         }
 
-        public void ResetAudioAndMidi()
+        public void ClearStatus()
+        {
+            status.IsHauptwerkAudioActive = false;
+            status.IsHauptwerkMidiActive = false;
+        }
+
+        public void ResetMidiAndAudio()
         {
             SendMessageAsConfigured(config.Reset);
         }
@@ -51,9 +57,9 @@ namespace VirtualOrgan.PcService.Hauptwerk
             SendMessageAsConfigured(config.Stop);
         }
 
-        public void ShutDownComputer()
+        public void Quit()
         {
-            SendMessageAsConfigured(config.Shutdown);
+            SendMessageAsConfigured(config.Quit);
         }
 
         private void SendMessageAsConfigured(HauptwerkConfiguration.MidiNote command)

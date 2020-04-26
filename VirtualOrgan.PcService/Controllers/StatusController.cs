@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using VirtualOrgan.PcService.ApiModel;
 
 namespace VirtualOrgan.PcService.Controllers
@@ -15,9 +16,9 @@ namespace VirtualOrgan.PcService.Controllers
         }
 
         [HttpGet]
-        public Status Get()
+        public async Task<Status> Get()
         {
-            var pcStatus = service.GetStatus();
+            var pcStatus = await service.GetStatusAsync();
             return new Status
             {
                 Running = pcStatus.IsHauptwerkRunning,

@@ -7,11 +7,12 @@ namespace VirtualOrgan.PcService
     /// </summary>
     public interface IPcService
     {
-        PcStatus GetStatus();
-        Task StartHauptwerk();
+        Task<PcStatus> GetStatusAsync();
+        void RestartHauptwerk();
+        void ShutdownPc();
+        void ResetMidiAndAudio();
+
         void PlayMidiFile(int id);
         void StopPlayback();
-        void ResetMidiAndAudio();
-        void ShutdownPc();
     }
 }
