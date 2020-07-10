@@ -13,17 +13,20 @@ namespace VirtualOrgan.PcService
     {
         private readonly IHauptwerkMidiInterface hauptwerk;
         private readonly IProcessHelper processHelper;
+        private readonly Audio.IAudioCard audioCard;
         private readonly RestartHauptwerkConfiguration options;
         private readonly ILogger<RestartHauptwerkTask> logger;
 
         public RestartHauptwerkTask(
             IHauptwerkMidiInterface hauptwerk,
             IProcessHelper processHelper,
+            Audio.IAudioCard audioCard,
             IOptions<RestartHauptwerkConfiguration> options,
             ILogger<RestartHauptwerkTask> logger)
         {
             this.hauptwerk = hauptwerk;
             this.processHelper = processHelper;
+            this.audioCard = audioCard;
             this.options = options.Value;
             this.logger = logger;
         }
@@ -55,6 +58,11 @@ namespace VirtualOrgan.PcService
                     hauptwerk.ClearStatus();
                     cancellationToken.ThrowIfCancellationRequested();
                     await Task.Delay(options.WaitBeforeRestartMs, cancellationToken);
+                    while (!await audioCard.IsActiveAsync())
+                    {
+                        await Task.Delay(options.AudioCardPingInterval, cancellationToken);
+                    }
+                    cancellationToken.ThrowIfCancellationRequested();
                     var completionTask = hauptwerk.HauptwerkStatuses
                         .Timeout(TimeSpan.FromMilliseconds(options.OrganLoadingTimeoutMs))
                         .TakeUntil(status => status.IsHauptwerkAudioActive && status.IsHauptwerkMidiActive)
@@ -84,6 +92,7 @@ namespace VirtualOrgan.PcService
         public int DelayAfterSoftQuitMs { get; set; } = 5000;
         public int DelayAfterKillMs { get; set; } = 500;
         public int WaitBeforeRestartMs { get; set; } = 1000;
+        public int AudioCardPingInterval { get; set; } = 500;
         public int DelayAfterStartProcessMs { get; set; } = 3000;
         public int OrganLoadingTimeoutMs { get; set; } = 20000;
     }

@@ -9,17 +9,20 @@ namespace VirtualOrgan.PcService
     {
         private readonly IHauptwerkMidiInterface hauptwerk;
         private readonly IProcessHelper processHelper;
+        private readonly IAudioCard audioCard;
         private readonly IOptions<RestartHauptwerkConfiguration> options;
         private readonly ILogger<RestartHauptwerkTask> logger;
 
         public RestartHauptwerkTaskFactory(
             IHauptwerkMidiInterface hauptwerk,
             IProcessHelper processHelper,
+            IAudioCard audioCard,
             IOptions<RestartHauptwerkConfiguration> options,
             ILogger<RestartHauptwerkTask> logger)
         {
             this.hauptwerk = hauptwerk;
             this.processHelper = processHelper;
+            this.audioCard = audioCard;
             this.options = options;
             this.logger = logger;
         }
@@ -30,6 +33,7 @@ namespace VirtualOrgan.PcService
             new RestartHauptwerkTask(
                 hauptwerk,
                 processHelper,
+                audioCard,
                 options,
                 logger);
     }
