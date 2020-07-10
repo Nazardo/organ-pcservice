@@ -28,7 +28,7 @@ namespace VirtualOrgan.PcService
             this.logger = logger;
         }
 
-        protected override void Execute(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             int numberOfTriesWithMidi = options.NumberOfSoftTries;
             logger.LogInformation("Quit Hauptwerk (if running)");
@@ -40,13 +40,13 @@ namespace VirtualOrgan.PcService
                     numberOfTriesWithMidi--;
                     logger.LogDebug("Quit Hauptwerk via interface");
                     hauptwerk.Quit();
-                    Task.Delay(options.DelayAfterSoftQuitMs, cancellationToken);
+                    await Task.Delay(options.DelayAfterSoftQuitMs, cancellationToken);
                 }
                 else
                 {
                     logger.LogDebug("Quit Hauptwerk with Kill");
                     processHelper.KillAll();
-                    Task.Delay(options.DelayAfterKillMs, cancellationToken);
+                    await Task.Delay(options.DelayAfterKillMs, cancellationToken);
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();

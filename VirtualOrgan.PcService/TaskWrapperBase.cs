@@ -12,22 +12,12 @@ namespace VirtualOrgan.PcService
         {
             cancellationTokenSource = new CancellationTokenSource();
             var token = cancellationTokenSource.Token;
-            Task = new Task(() =>
-            {
-                try
-                {
-                    Execute(token);
-                }
-                catch (OperationCanceledException)
-                {
-                    // swallow cancellation
-                }
-            }, token);
+            Task = ExecuteAsync(token);
         }
 
         public Task Task { get; }
 
-        protected abstract void Execute(CancellationToken cancellationToken);
+        protected abstract Task ExecuteAsync(CancellationToken cancellationToken);
 
         ~TaskWrapperBase()
         {

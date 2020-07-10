@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using VirtualOrgan.PcService.Hauptwerk;
 
@@ -12,14 +11,14 @@ namespace VirtualOrgan.PcService
     {
         private readonly IDisposable subscriptionToHauptwerkStatus;
         private readonly IHauptwerkMidiInterface hauptwerk;
-        private readonly IServiceProvider serviceProvider;
+        private readonly Dictionary<Operation, ITaskFactory> taskFactories;
         private readonly ILogger<PcService> logger;
         private PcStatus status;
         private ITaskWrapper currentTask;
 
         public PcService(
             IHauptwerkMidiInterface hauptwerk,
-            IServiceProvider serviceProvider,
+            IEnumerable<ITaskFactory> taskFactories,
             ILogger<PcService> logger)
         {
             status = new PcStatus();
@@ -31,9 +30,9 @@ namespace VirtualOrgan.PcService
                     IsHauptwerkMidiActive = hwStatus.IsHauptwerkMidiActive
                 });
             this.hauptwerk = hauptwerk;
-            this.serviceProvider = serviceProvider;
+            this.taskFactories = taskFactories.ToDictionary(t => t.Operation);
             this.logger = logger;
-            RunTask(serviceProvider.GetRequiredService<RestartHauptwerkTask>());
+            RestartHauptwerk();
         }
 
         public void Dispose()
@@ -55,15 +54,15 @@ namespace VirtualOrgan.PcService
 
         public void RestartHauptwerk()
         {
-            RunTask(serviceProvider.GetRequiredService<RestartHauptwerkTask>());
+            RunTask(Operation.RestartHauptwerk);
         }
 
         public void ShutdownPc()
         {
-            RunTask(serviceProvider.GetRequiredService<QuitAndShutdownTask>());
+            RunTask(Operation.QuitAndShutdown);
         }
 
-        private void RunTask(ITaskWrapper task)
+        private void RunTask(Operation operation)
         {
             if (currentTask != null)
             {
@@ -71,8 +70,14 @@ namespace VirtualOrgan.PcService
                 currentTask.Dispose();
                 currentTask = null;
             }
-            currentTask = task;
-            task.Task.Start();
+            if (taskFactories.TryGetValue(operation, out ITaskFactory factory))
+            {
+                currentTask = factory.Create(); // created task is *hot* and runnning
+            }
+            else
+            {
+                logger.LogWarning("Missing task for operation {0}", operation);
+            }
         }
 
         public void PlayMidiFile(int id)

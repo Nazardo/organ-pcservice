@@ -49,8 +49,8 @@ namespace VirtualOrgan.PcService
                 .AddSingleton<Midi.IMidiMessageSerializer, Midi.Impl.MessageSerializer>()
                 .AddSingleton<Midi.IMidiInterface, Midi.Impl.MidiInterface>()
 
-                .AddTransient<QuitAndShutdownTask>()
-                .AddTransient<RestartHauptwerkTask>()
+                .AddSingleton<ITaskFactory, QuitAndShutdownTaskFactory>()
+                .AddSingleton<ITaskFactory, RestartHauptwerkTaskFactory>()
 
                 .AddAlwaysOnSingleton<IPcService, PcService>()
                 .AddControllers();

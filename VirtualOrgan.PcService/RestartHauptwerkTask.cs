@@ -28,7 +28,7 @@ namespace VirtualOrgan.PcService
             this.logger = logger;
         }
 
-        protected override void Execute(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             bool started = false;
             while (!started)
@@ -42,26 +42,26 @@ namespace VirtualOrgan.PcService
                     {
                         numberOfTriesWithMidi--;
                         hauptwerk.Quit();
-                        Task.Delay(options.DelayAfterSoftQuitMs, cancellationToken);
+                        await Task.Delay(options.DelayAfterSoftQuitMs, cancellationToken);
                     }
                     else
                     {
                         processHelper.KillAll();
-                        Task.Delay(options.DelayAfterKillMs, cancellationToken);
+                        await Task.Delay(options.DelayAfterKillMs, cancellationToken);
                     }
                 }
                 try
                 {
                     hauptwerk.ClearStatus();
                     cancellationToken.ThrowIfCancellationRequested();
-                    Task.Delay(options.WaitBeforeRestartMs, cancellationToken);
+                    await Task.Delay(options.WaitBeforeRestartMs, cancellationToken);
                     var completionTask = hauptwerk.HauptwerkStatuses
                         .Timeout(TimeSpan.FromMilliseconds(options.OrganLoadingTimeoutMs))
                         .TakeUntil(status => status.IsHauptwerkAudioActive && status.IsHauptwerkMidiActive)
-                        .ToTask();
+                        .ToTask(cancellationToken);
                     logger.LogInformation("Starting Hauptwerk");
                     processHelper.Start();
-                    completionTask.Wait(cancellationToken);
+                    await completionTask;
                     started = true;
                     logger.LogInformation("Hauptwerk started");
                 }
