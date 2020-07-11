@@ -72,7 +72,8 @@ namespace VirtualOrgan.PcService
             }
             if (taskFactories.TryGetValue(operation, out ITaskFactory factory))
             {
-                currentTask = factory.Create(); // created task is *hot* and runnning
+                currentTask = factory.Create();
+                currentTask.Start();
             }
             else
             {

@@ -7,15 +7,27 @@ namespace VirtualOrgan.PcService
     abstract class TaskWrapperBase : ITaskWrapper
     {
         private readonly CancellationTokenSource cancellationTokenSource;
+        private Task runningTask;
 
         protected TaskWrapperBase()
         {
             cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            Task = ExecuteAsync(token);
         }
 
-        public Task Task { get; }
+        public void Start()
+        {
+            runningTask = Task.Run(async () =>
+            {
+                try
+                {
+                    await ExecuteAsync(cancellationTokenSource.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // swallow cancellation
+                }
+            });
+        }
 
         protected abstract Task ExecuteAsync(CancellationToken cancellationToken);
 
@@ -32,8 +44,16 @@ namespace VirtualOrgan.PcService
 
         protected virtual void Dispose(bool disposing)
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource.Dispose();
+            if (disposing)
+            {
+                cancellationTokenSource.Cancel();
+                if (runningTask != null)
+                {
+                    runningTask.Wait();
+                    runningTask = null;
+                }
+                cancellationTokenSource.Dispose();
+            }
         }
     }
 }
